@@ -7,4 +7,3 @@ TARGET_CLASSES = {0: "person", 2: "car", 3: "motorcycle", 9: "traffic light"}
 
 cap = cv2.VideoCapture(0)
 
-#hello world
