@@ -1,2 +1,2 @@
 # Smart Driving Decision System
-A mini self-driving decision-making brain !
+A self driving decision making brain !
