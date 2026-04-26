@@ -26,4 +26,10 @@ while cap.isOpened():#while camera is open
         conf = float(box.conf[0]) #get the confidence of the detected object, [0] to get the first confidence since we are processing one box at a time
         x1, y1, x2, y2 = map(int, box.xyxy[0]) #get the coordinates of the bounding box, [0] to get the first box since we are processing one box at a time
 
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(frame, f"{label} {conf:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
         
+
+
+
