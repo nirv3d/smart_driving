@@ -6,6 +6,8 @@ model = YOLO("yolov8n.pt")
 #defining what to detect
 TARGET_CLASSES = {0: "person", 2: "car", 3: "motorcycle", 9: "traffic light"}
 
+PRIORITY = {0: 1, 2: 2, 3: 2, 9: 3} #priority of detected objects, lower number means higher priority, person has highest priority, traffic light has lowest priority, cae and motorcycle have same priority
+
 #initializing webcam, 0 = first webcam
 cap = cv2.VideoCapture(0)
 
