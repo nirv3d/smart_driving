@@ -46,13 +46,29 @@ while cap.isOpened():#while camera is open
         if cls_id not in TARGET_CLASSES: #if the class id is not in our target classes, skip it
             continue
         detections.append((PRIORITY[cls_id], box, cls_id))#append/add the priority and the box and id to the detections list
+    
+    detections.sort(key=lambda x: x[0])#sort the detections list based on priority, lower number means higher priority
 
+    for _, box, cls_id in detections: #iterate through the sorted detections list, _ is used to ignore the priority value since we dont need it for drawing the bounding box and label
         label = TARGET_CLASSES[cls_id] #get the label of the detected object using the class id
         conf = float(box.conf[0]) #get the confidence of the detected object, [0] to extract the first confidence from tensor 
         x1, y1, x2, y2 = map(int, box.xyxy[0]) #get the coordinates of the bounding box, [0] to extract the first box coordinates from tensor
 
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, f"{label} {conf:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        box_height = y2 - y1 #calculate the height of the bounding box to estimate distance of detected object
+        distance = estimate_distance(box_height, frame_height) #estimate the distance of the detected object
+        priority = get_priority_label(cls_id) #get the priority label of the detected object
+
+        if cls_id == 0:
+            color = (0, 0, 255) #red color for person
+        elif cls_id == 2 or cls_id == 3:
+            color = (0, 165, 255) #orange color for car and motorcycle
+        else:
+            color = (0, 255, 255) #yellow color for traffic light
+
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+
+        text = f"{label} {conf:.2f} | {distance} | {priority}"
+        cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     cv2.imshow("Smart Driving", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'): #0xFF is a bitwise operation to get the last 8 bits of the key pressed, ord('q') gets the ASCII value of 'q'
