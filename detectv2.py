@@ -70,7 +70,7 @@ while cap.isOpened():#while camera is open
         text = f"{label} {conf:.2f} | {distance} | {priority}"
         cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-    cv2.imshow("Smart Driving", frame)
+    cv2.imshow("bhai please yahaan mat dekho", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'): #0xFF is a bitwise operation to get the last 8 bits of the key pressed, ord('q') gets the ASCII value of 'q'
         break
 
