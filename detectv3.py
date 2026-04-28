@@ -106,7 +106,13 @@ while cap.isOpened():#while camera is open
         text = f"{label} {conf:.2f} | {distance} | {priority}"
         cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-    cv2.imshow("bhai please yahaan mat dekho", frame)
+    decision, decision_color = make_decision(total_risk) #make a decision based on the total risk of the detected objects in the frame
+
+    cv2.rectangle(frame, (0, 0), (frame_width, 60), (0, 0, 0), -1)  # black bar
+    cv2.putText(frame, f"DECISION: {decision}  |  RISK: {total_risk}",
+                (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, decision_color, 3)
+
+    cv2.imshow("smart driving", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'): #0xFF is a bitwise operation to get the last 8 bits of the key pressed, ord('q') gets the ASCII value of 'q'
         break
 
