@@ -58,7 +58,6 @@ def make_decision(total_risk):
     else:
         return "GO", (0, 255, 0) #green color for go
 
-
 #initializing webcam, 0 = first webcam
 cap = cv2.VideoCapture(0)
 
@@ -68,6 +67,7 @@ while cap.isOpened():#while camera is open
         break
 
     frame_height = frame.shape[0] #get the height of the frame to estimate distance of detected objects
+    frame_width = frame.shape[1] 
     #run the model on the frame, verbose = False to disable printing results to console, [0] to get the first result (since model can return multiple results for batch processing, we dont need that here since we are processing one frame at a time) 
     results = model(frame, verbose=False)[0] 
 
@@ -80,6 +80,8 @@ while cap.isOpened():#while camera is open
     
     detections.sort(key=lambda x: x[0])#sort the detections list based on priority, lower number means higher priority
 
+    total_risk = 0 #variable to store the total risk of the detected objects in the frame
+
     for _, box, cls_id in detections: #iterate through the sorted detections list, _ is used to ignore the priority value since we dont need it for drawing the bounding box and label
         label = TARGET_CLASSES[cls_id] #get the label of the detected object using the class id
         conf = float(box.conf[0]) #get the confidence of the detected object, [0] to extract the first confidence from tensor 
@@ -88,6 +90,9 @@ while cap.isOpened():#while camera is open
         box_height = y2 - y1 #calculate the height of the bounding box to estimate distance of detected object
         distance = estimate_distance(box_height, frame_height) #estimate the distance of the detected object
         priority = get_priority_label(cls_id) #get the priority label of the detected object
+
+        risk = calculate_risk(cls_id, distance) #calculate the risk of the detected object based on its class and distance
+        total_risk += risk #add the risk of the detected object to the total risk
 
         if cls_id == 0:
             color = (0, 0, 255) #red color for person
