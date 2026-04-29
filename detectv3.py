@@ -126,6 +126,8 @@ while cap.isOpened():#while camera is open
         risk = calculate_risk(cls_id, distance) #calculate the risk of the detected object based on its class and distance
         total_risk += risk #add the risk of the detected object to the total risk
 
+        detected_objects.append((cls_id, distance)) #add the detected object and its distance to the detected_objects list for explanation
+
         if cls_id == 0:
             color = (0, 0, 255) #red color for person
         elif cls_id == 2 or cls_id == 3:
