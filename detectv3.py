@@ -1,4 +1,5 @@
 import cv2
+import time
 from ultralytics import YOLO
 
 model = YOLO("yolov8n.pt")
@@ -57,6 +58,36 @@ def make_decision(total_risk):
         return "SLOW DOWN", (0, 165, 255) #orange color for slow down
     else:
         return "GO", (0, 255, 0) #green color for go
+    
+def get_explanation(decision, detected_objects):
+    if not detected_objects:
+        return "road is clear, safe to continue"
+    top = sorted(detected_objects, key=lambda x: x[0])[0] #get the highest priority detected object
+    cls_id, distance = top
+    
+    total = len(detected_objects)
+    multi = f"{total} obstacles detected. " if total > 1 else ""
+
+    if decision == "STOP":
+        if cls_id == 0:
+            return f"{multi}Pedestrian at a {distance.lower()} range. Stop immediately."
+        elif cls_id == 2 or cls_id == 3:
+            return f"{multi}Vehicle at a {distance.lower()} range. Stop immediately."
+        else:
+            return f"{multi}Risk detected. You should stop"
+        
+    if decision == "SLOW DOWN":
+        if cls_id == 0:
+            return f"{multi}Pedestrian at a {distance.lower()} range spotted. Slow down."
+        elif cls_id == 2 or cls_id == 3:
+            return f"{multi}Vehicle at a {distance.lower()} range spotted. Be careful, reduce speed."
+        else:
+            return f"{multi}Risk detected. Proceed with caution."
+        
+    else:
+        return f"{multi}No risk detected. road is clear, safe to continue."
+        
+
 
 #initializing webcam, 0 = first webcam
 cap = cv2.VideoCapture(0)
@@ -81,6 +112,7 @@ while cap.isOpened():#while camera is open
     detections.sort(key=lambda x: x[0])#sort the detections list based on priority, lower number means higher priority
 
     total_risk = 0 #variable to store the total risk of the detected objects in the frame
+    detected_objects = [] #list to store the detected objects and their distances for explanation
 
     for _, box, cls_id in detections: #iterate through the sorted detections list, _ is used to ignore the priority value since we dont need it for drawing the bounding box and label
         label = TARGET_CLASSES[cls_id] #get the label of the detected object using the class id
