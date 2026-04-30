@@ -92,6 +92,10 @@ def get_explanation(decision, detected_objects):
 #initializing webcam, 0 = first webcam
 cap = cv2.VideoCapture(0)
 
+last_explnation_time = 0
+last_decision = ""
+explantion = "analyzing road..." #initial explanation to display while the model is analyzing the road
+
 while cap.isOpened():#while camera is open
     ret, frame = cap.read() #ret = boolian(true/false), frame = image
     if not ret: #if there is no frame,
@@ -141,6 +145,7 @@ while cap.isOpened():#while camera is open
         cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     decision, decision_color = make_decision(total_risk) #make a decision based on the total risk of the detected objects in the frame
+    
 
     cv2.rectangle(frame, (0, 0), (frame_width, 60), (0, 0, 0), -1)  # black bar
     cv2.putText(frame, f"DECISION: {decision}  |  RISK: {total_risk}",
