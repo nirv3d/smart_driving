@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Driving Decision System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0d0d0d;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #222;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 60px);
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .video-container {
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .video-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .decision-card {
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid;
+            transition: all 0.3s;
+        }
+
+        .decision-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .decision-value {
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .info-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #222;
+        }
+
+        .info-title {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .reason-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #444;
+        }
+
+        .reason-title {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .reason-text {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .detections-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #222;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            font-size: 13px;
+        }
+
+        .detection-item:last-child {
+            border-bottom: none;
+        }
+
+        .det-label {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .det-dist {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .det-risk {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #333;
+        }
+
+        .no-detections {
+            color: #555;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<header>🚗 Smart Driving Decision System</header>
+
+<div class="dashboard">
+    <div class="left-panel">
+        <div class="video-container">
+            <img src="/video" alt="Live Feed">
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="decision-card" id="decisionCard">
+            <div class="decision-label">DECISION</div>
+            <div class="decision-value" id="decisionValue">--</div>
+        </div>
+
+        <div class="row">
+            <div class="info-card">
+                <div class="info-title">Risk Score</div>
+                <div class="info-value" id="riskValue">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-title">Objects</div>
+                <div class="info-value" id="objectCount">0</div>
+            </div>
+        </div>
+
+        <div class="reason-card" id="reasonCard">
+            <div class="reason-title">Reason</div>
+            <div class="reason-text" id="reasonText">Analyzing road...</div>
+        </div>
+
+        <div class="detections-card">
+            <div class="info-title">Detections</div>
+            <div id="detectionsList">
+                <div class="no-detections">No objects detected</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateDashboard() {
+        fetch("/data")
+            .then(res => res.json())
+            .then(data => {
+                const color = data.decision_color;
+
+                document.getElementById("decisionValue").textContent = data.decision;
+                document.getElementById("decisionValue").style.color = color;
+                document.getElementById("decisionCard").style.borderColor = color;
+                document.getElementById("decisionCard").style.background = color + "22";
+
+                document.getElementById("riskValue").textContent = data.risk;
+                document.getElementById("riskValue").style.color = color;
+                document.getElementById("objectCount").textContent = data.detections.length;
+
+                document.getElementById("reasonText").textContent = data.reason;
+                document.getElementById("reasonCard").style.borderLeftColor = color;
+
+                const list = document.getElementById("detectionsList");
+                if (data.detections.length === 0) {
+                    list.innerHTML = '<div class="no-detections">No objects detected</div>';
+                } else {
+                    list.innerHTML = data.detections.map(d => `
+                        <div class="detection-item">
+                            <span class="det-label">${d.label}</span>
+                            <span class="det-dist">${d.distance}</span>
+                            <span class="det-risk">risk: ${d.risk}</span>
+                        </div>
+                    `).join("");
+                }
+            });
+    }
+
+    // update dashboard every 500ms
+    setInterval(updateDashboard, 200);
+    updateDashboard();
+</script>
+
+</body>
+</html>
