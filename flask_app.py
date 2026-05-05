@@ -10,7 +10,6 @@ model = YOLO("yolov8n.pt")
 TARGET_CLASSES = {0: "person", 2: "car", 3: "motorcycle", 9: "traffic light"}
 PRIORITY = {0: 1, 2: 2, 3: 2, 9: 3}
 
-# ── Shared State ──────────────────────────────────────────────
 state = {
     "decision": "GO",
     "risk": 0,
@@ -20,7 +19,6 @@ state = {
 }
 state_lock = threading.Lock()
 
-# ── Functions ─────────────────────────────────────────────────
 def estimate_distance(box_height, frame_height):
     ratio = box_height / frame_height
     if ratio > 0.5:   return "VERY NEAR"
@@ -63,7 +61,6 @@ def get_explanation(decision, detected_objects):
         else:                  return f"{multi}Object detected ahead, proceed with caution."
     return "No obstacles detected, road is clear."
 
-# ── Detection Thread ──────────────────────────────────────────
 def detection_thread():
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     last_explanation_time = 0
@@ -145,7 +142,6 @@ def detection_thread():
             state["decision_color"] = decision_color
             state["frame"] = frame.copy()
 
-# ── Video Stream Generator ────────────────────────────────────
 def generate_frames():
     while True:
         with state_lock:
@@ -163,11 +159,9 @@ def generate_frames():
 
         time.sleep(0.03)
 
-# ── Start Detection Thread ────────────────────────────────────
 thread = threading.Thread(target=detection_thread, daemon=True)
 thread.start()
 
-# ── Flask Routes ──────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("dashboard.html")
